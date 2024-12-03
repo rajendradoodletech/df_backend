@@ -51,6 +51,7 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
     role = models.ForeignKey(UserRole, on_delete=models.PROTECT, null = True, blank = True)
+    manager = models.ForeignKey("self", on_delete=models.CASCADE, null = True, blank=True)
     objects = CustomUserManager()
 
     USERNAME_FIELD = "email"
@@ -74,3 +75,11 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
         # Simplest possible answer: All admins are staff
         return self.is_admin
     
+class OTP(models.Model):
+    otp = models.CharField(max_length=20)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.otp
