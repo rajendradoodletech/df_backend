@@ -1,12 +1,13 @@
 from django.shortcuts import render
 from rest_framework import generics
+from rest_framework import permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializers import UserSerializer
+from .serializers import UserSerializer, TemplateSerializer, CampaignSerializer, MessageSerializer, ContactSerializer, ContactGroupSerializer
 from django.core.mail import send_mail
 import random
 from rest_framework.status import HTTP_404_NOT_FOUND, HTTP_400_BAD_REQUEST
-from .models import CustomUser, OTP, UserRole
+from .models import CustomUser, OTP, UserRole, Template, Campaign, Message, Contact, ContactGroup
 
 # Create your views here.
 
@@ -70,3 +71,53 @@ class Register(APIView):
         user.save()
 
         return Response({"detail": "Registered Successfully"})
+    
+class TemplateListCreateView(generics.ListCreateAPIView):
+    queryset = Template.objects.all()
+    serializer_class = TemplateSerializer
+    permission_classes = [permissions.AllowAny]
+    
+class TemplateDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Template.objects.all()
+    serializer_class = TemplateSerializer
+    permission_classes = [permissions.AllowAny]
+    
+class CampaignListCreateView(generics.ListCreateAPIView):
+    queryset = Campaign.objects.all()
+    serializer_class = CampaignSerializer
+    permission_classes = [permissions.AllowAny]
+    
+class CampaignDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Campaign.objects.all()
+    serializer_class = CampaignSerializer
+    permission_classes = [permissions.AllowAny]
+    
+class MessageListCreateView(generics.ListCreateAPIView):
+    queryset = Message.objects.all()
+    serializer_class = MessageSerializer
+    permission_classes = [permissions.AllowAny]
+    
+class MessageDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Message.objects.all()
+    serializer_class = MessageSerializer
+    permission_classes = [permissions.AllowAny]
+    
+class ContactListCreateView(generics.ListCreateAPIView):
+    queryset = Contact.objects.all()
+    serializer_class = ContactSerializer
+    permission_classes = [permissions.AllowAny]
+    
+class ContactDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Contact.objects.all()
+    serializer_class = ContactSerializer
+    permission_classes = [permissions.AllowAny]
+    
+class ContactGroupListCreateView(generics.ListCreateAPIView):
+    queryset = ContactGroup.objects.all()
+    serializer_class = ContactGroupSerializer
+    permission_classes = [permissions.AllowAny]
+    
+class ContactGroupDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = ContactGroup.objects.all()
+    serializer_class = ContactGroupSerializer
+    permission_classes = [permissions.AllowAny]

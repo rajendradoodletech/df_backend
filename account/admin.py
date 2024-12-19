@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import CustomUser, UserRole, OTP
+from .models import CustomUser, UserRole, OTP, Template, Campaign, Message, Contact, ContactGroup
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import Group
 
@@ -40,4 +40,9 @@ class OTPAdmin(admin.ModelAdmin):
 admin.site.register(CustomUser, UserAdmin)
 admin.site.register(UserRole)
 admin.site.register(OTP, OTPAdmin)
+admin.site.register(Template)
+admin.site.register(Campaign)
+admin.site.register(Message)
+admin.site.register(Contact)
+admin.site.register(ContactGroup)
 admin.site.unregister(Group)
