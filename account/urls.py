@@ -8,6 +8,7 @@ urlpatterns = [
     path("register/", views.Register.as_view(), name = "register"),
     path("templates/", views.TemplateListCreateView.as_view(), name = "templates"),
     path("templates/<str:pk>", views.TemplateDetailView.as_view(), name = "templates-details"),
+    path("create-campaign/", views.CreateCampaign.as_view(), name = "create-campaign"),
     path("campaigns/", views.CampaignListCreateView.as_view(), name = "campaigns"),
     path("campaigns/<str:pk>", views.CampaignDetailView.as_view(), name = "campaigns-details"),
     path("messages/", views.MessageListCreateView.as_view(), name = "messages"),

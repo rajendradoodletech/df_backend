@@ -8,6 +8,10 @@ from django.core.mail import send_mail
 import random
 from rest_framework.status import HTTP_404_NOT_FOUND, HTTP_400_BAD_REQUEST
 from .models import CustomUser, OTP, UserRole, Template, Campaign, Message, Contact, ContactGroup
+import csv
+import io
+import requests
+import time
 
 # Create your views here.
 
@@ -121,3 +125,55 @@ class ContactGroupDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = ContactGroup.objects.all()
     serializer_class = ContactGroupSerializer
     permission_classes = [permissions.AllowAny]
+
+
+class CreateCampaign(APIView):
+    def post(self, request):
+        file = request.FILES["file"]
+        print(request.data)
+
+        decoded_file = file.read().decode('utf-8')
+        csv_reader = csv.reader(io.StringIO(decoded_file))
+        contact_group = ContactGroup.objects.create(group_name=request.data.get("campaign_name"))
+
+        campaign_name = request.body.get("campaign_name")
+        template_name = request.body.get("template_name")
+
+        new_campaign = Campaign.objects.create({
+            "name": campaign_name,
+            "template": template_name,
+            "to_group": contact_group,
+            "status": "Running",
+        })
+
+        url = "https://graph.facebook.com/v17.0/<phone-number-id>/messages"
+
+        headers = {
+            "Authorization": "Bearer YOUR_ACCESS_TOKEN",
+            "Content-Type": "application/json"
+        }
+
+        for contact in csv_reader[1:]:
+            name = contact[0]
+            phone = contact[1]
+            new_contact = Contact.objects.create({
+                "name": name,
+                "phone": phone,
+                "contact_group": contact_group
+            })
+
+            payload = {
+                "messaging_product": "whatsapp",
+                "to": recipient,
+                "type": "template",
+                "template": {
+                    "name": request.data.get("template_name"),  # Your pre-approved template name
+                    "language": {"code": "en"}
+                }
+            }
+            
+            msg_response = requests.post(url, headers=headers, json=payload)
+
+        new_campaign.status = "Completed"
+        new_campaign.save()
+        return Response({"status: Success"})

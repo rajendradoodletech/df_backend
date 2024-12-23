@@ -131,7 +131,7 @@ class Campaign(models.Model):
     template = models.ForeignKey(Template, on_delete=models.CASCADE, related_name="campaigns")
     description = models.TextField(blank=True, null=True, help_text="Description of the campaign")
     to_group = models.ForeignKey(ContactGroup, on_delete=models.CASCADE)
-    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default="DRAFT")
+    status = models.CharField(max_length=15, choices=STATUS_CHOICES, default="Running")
     scheduled_time = models.DateTimeField(blank=True, null=True, help_text="Scheduled time to start the campaign")
     created_at = models.DateTimeField(auto_now_add=True)
 
