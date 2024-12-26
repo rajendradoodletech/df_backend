@@ -133,43 +133,39 @@ class CreateCampaign(APIView):
         csv_reader = csv.reader(io.StringIO(decoded_file))
         contact_group = ContactGroup.objects.create(group_name=request.data.get("campaign_name"))
 
-        campaign_name = request.body.get("campaign_name")
-        template_name = request.body.get("template_name")
+        campaign_name = request.data.get("campaign_name")
+        template_name = request.data.get("template_name")
+        template = Template.objects.get(id = request.data.get("template"))
 
-        new_campaign = Campaign.objects.create({
-            "name": campaign_name,
-            "template": template_name,
-            "to_group": contact_group,
-            "status": "Running",
-        })
+        new_campaign = Campaign.objects.create(name=campaign_name, template=template, to_group=contact_group, status="Running")
 
-        url = "https://graph.facebook.com/v17.0/<phone-number-id>/messages"
+        url = "https://graph.facebook.com/v21.0/219006681298210/messages"
 
         headers = {
-            "Authorization": "Bearer YOUR_ACCESS_TOKEN",
+            "Authorization": "Bearer EAAQzrLYZAd5wBO9PkrJ2u9wVnrS4Q6LZAkiVamSJHtx8jf9DZBstBamaHrGaBSA0vHBcZAqtSoIpdps8oF8ANv9PqKGMDYy6rJzvNQ16yEz6qk4ecsoeSucTMstl2hUqIK4H6HrCCbcbDojHrLLpWCXKQRjymvnFNXQ5kf4ynnC26aEmqYG0BxmvTbtVZBYwPDoF76GOCullXQB8O6nMPHy4hmGZBa",
             "Content-Type": "application/json"
         }
 
-        for contact in csv_reader[1:]:
-            name = contact[0]
-            phone = contact[1]
-            new_contact = Contact.objects.create({
-                "name": name,
-                "phone": phone,
-                "contact_group": contact_group
-            })
+        for contact in csv_reader:
+            if contact[0] != "name":
+                print(contact[1])
+                name = contact[0]
+                phone = contact[1]
+                new_contact = Contact.objects.create(name = name, phone = phone, contact_group = contact_group
+                )
 
-            payload = {
-                "messaging_product": "whatsapp",
-                "to": recipient,
-                "type": "template",
-                "template": {
-                    "name": request.data.get("template_name"),  # Your pre-approved template name
-                    "language": {"code": "en"}
+                payload = {
+                    "messaging_product": "whatsapp",
+                    "to": phone,
+                    "type": "template",
+                    "template": {
+                        "name": template.name,  # Your pre-approved template name
+                        "language": {"code": template.language}
+                    }
                 }
-            }
-            
-            msg_response = requests.post(url, headers=headers, json=payload)
+                
+                msg_response = requests.post(url, headers=headers, json=payload)
+                print(msg_response.__dict__)
 
         new_campaign.status = "Completed"
         new_campaign.save()
@@ -187,5 +183,27 @@ class CreateTemplate(APIView):
                 data[key] = json.loads(value)
 
         print(data)
+
+        new_template = Template()
+        new_template.name = data.get("templateName")
+        new_template.language = "en_US"
+        new_template.category = data.get("category")
+        new_template.template_type = data.get("templateType")
+        new_template.body = data.get("content")
+        new_template.headerType = data.get("headerType")
+        if (data.get("headerContent") and data.get("headerContent") != "undefined"):
+            new_template.header = data.get("headerContent")
+        new_template.footer = data.get("footerContent")
+        new_template.header_media = request.FILES.get("templateFile")
+        if data.get("buttons[0]"):
+            new_template.button1 = data.get("buttons[0]")
+        if data.get("buttons[1]"):
+            new_template.button2 = data.get("buttons[1]")
+        if data.get("buttons[2]"):
+            new_template.button3 = data.get("buttons[2]")
+        if data.get("buttons[3]"):
+            new_template.button4 = data.get("buttons[3]")
+
+        new_template.save()
 
         return Response({"status": "Success"})

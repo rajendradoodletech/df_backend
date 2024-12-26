@@ -99,21 +99,30 @@ class Contact(models.Model):
 
 class Template(models.Model):
     TEMPLATE_CATEGORIES = [
-        ('MARKETING', 'Marketing'),
-        ('TRANSACTIONAL', 'Transactional'),
-        ('UTILITY', 'Utility'),
+        ('marketing', 'Marketing'),
+        ('sales', 'Sales'),
+        ('support', 'Support'),
+    ]
+    TEMPLATE_TYPE = [
+        ('STANDARD', 'Standard'),
+        ('MEDIA', 'Media'),
     ]
 
     name = models.CharField(max_length=255, unique=True, help_text="WhatsApp template name")
     language = models.CharField(max_length=10, default="en_US", help_text="Language code, e.g., en_US")
-    category = models.CharField(max_length=15, choices=TEMPLATE_CATEGORIES, help_text="Template category")
+    category = models.CharField(max_length=15, choices=TEMPLATE_CATEGORIES, 
+    help_text="Template category")
+    template_type = models.CharField(max_length=20, choices = TEMPLATE_TYPE, default = "Standard")
     body = models.TextField(help_text="Template body with placeholders like {{1}}, {{2}}")
     headerType = models.CharField(max_length = 20, default = "None")
     header = models.CharField(max_length=255, blank=True, null=True, help_text="Optional header text")
     header_media = models.FileField(upload_to = "media", blank = True, null = True)
     footer = models.CharField(max_length=255, blank=True, null=True, help_text="Optional footer text")
-    link_title = models.CharField(max_length = 200, null = True, blank = True, help_text="Text to display in the message")
-    link_url = models.CharField(max_length = 200, null = True, blank = True, help_text="URL where to redirect")
+
+    button1 = models.JSONField(null=True, blank = True)
+    button2 = models.JSONField(null=True, blank = True)
+    button3 = models.JSONField(null=True, blank = True)
+    button4 = models.JSONField(null=True, blank = True)
     approved = models.BooleanField(default=False, help_text="WhatsApp template approval status")
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -129,7 +138,7 @@ class Campaign(models.Model):
         ('FAILED', 'Failed'),
     ]
 
-    name = models.CharField(max_length=255, unique=True, help_text="Name of the campaign")
+    name = models.CharField(max_length=255, help_text="Name of the campaign")
     template = models.ForeignKey(Template, on_delete=models.CASCADE, related_name="campaigns")
     description = models.TextField(blank=True, null=True, help_text="Description of the campaign")
     to_group = models.ForeignKey(ContactGroup, on_delete=models.CASCADE)
