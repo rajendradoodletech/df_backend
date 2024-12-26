@@ -7,6 +7,7 @@ urlpatterns = [
     path("forgot-password/", views.ForgorPassword.as_view(), name = "forgot_password"),
     path("register/", views.Register.as_view(), name = "register"),
     path("templates/", views.TemplateListCreateView.as_view(), name = "templates"),
+    path("template/create", views.CreateTemplate.as_view(), name = "create-template"),
     path("templates/<str:pk>", views.TemplateDetailView.as_view(), name = "templates-details"),
     path("create-campaign/", views.CreateCampaign.as_view(), name = "create-campaign"),
     path("campaigns/", views.CampaignListCreateView.as_view(), name = "campaigns"),

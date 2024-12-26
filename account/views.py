@@ -5,13 +5,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializers import UserSerializer, TemplateSerializer, CampaignSerializer, MessageSerializer, ContactSerializer, ContactGroupSerializer
 from django.core.mail import send_mail
-import random
+import random, csv, io, requests, time, json
 from rest_framework.status import HTTP_404_NOT_FOUND, HTTP_400_BAD_REQUEST
 from .models import CustomUser, OTP, UserRole, Template, Campaign, Message, Contact, ContactGroup
-import csv
-import io
-import requests
-import time
+
 
 # Create your views here.
 
@@ -177,3 +174,18 @@ class CreateCampaign(APIView):
         new_campaign.status = "Completed"
         new_campaign.save()
         return Response({"status: Success"})
+
+class CreateTemplate(APIView):
+    def post(self, request):
+        print(request.FILES)
+
+        data = request.data.dict()
+
+        # Convert button fields (JSON strings) to Python objects
+        for key, value in data.items():
+            if 'buttons' in key:
+                data[key] = json.loads(value)
+
+        print(data)
+
+        return Response({"status": "Success"})
