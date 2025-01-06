@@ -8,7 +8,11 @@ from django.core.mail import send_mail
 import random, csv, io, requests, time, json
 from rest_framework.status import HTTP_404_NOT_FOUND, HTTP_400_BAD_REQUEST
 from .models import CustomUser, OTP, UserRole, Template, Campaign, Message, Contact, ContactGroup
+import environ
+env = environ.Env()
 
+phone_number_id = env("PHONE_NUMBER_ID")
+access_token = env("TOKEN")
 
 # Create your views here.
 
@@ -142,7 +146,7 @@ class CreateCampaign(APIView):
         url = "https://graph.facebook.com/v21.0/219006681298210/messages"
 
         headers = {
-            "Authorization": "Bearer EAAQzrLYZAd5wBO9PkrJ2u9wVnrS4Q6LZAkiVamSJHtx8jf9DZBstBamaHrGaBSA0vHBcZAqtSoIpdps8oF8ANv9PqKGMDYy6rJzvNQ16yEz6qk4ecsoeSucTMstl2hUqIK4H6HrCCbcbDojHrLLpWCXKQRjymvnFNXQ5kf4ynnC26aEmqYG0BxmvTbtVZBYwPDoF76GOCullXQB8O6nMPHy4hmGZBa",
+            "Authorization": f"Bearer {access_token}",
             "Content-Type": "application/json"
         }
 
@@ -160,7 +164,7 @@ class CreateCampaign(APIView):
                     "type": "template",
                     "template": {
                         "name": template.name,  # Your pre-approved template name
-                        "language": {"code": template.language}
+                        "language": {"code": template.language} 
                     }
                 }
                 
@@ -184,26 +188,67 @@ class CreateTemplate(APIView):
 
         print(data)
 
-        new_template = Template()
-        new_template.name = data.get("templateName")
-        new_template.language = "en_US"
-        new_template.category = data.get("category")
-        new_template.template_type = data.get("templateType")
-        new_template.body = data.get("content")
-        new_template.headerType = data.get("headerType")
-        if (data.get("headerContent") and data.get("headerContent") != "undefined"):
-            new_template.header = data.get("headerContent")
-        new_template.footer = data.get("footerContent")
-        new_template.header_media = request.FILES.get("templateFile")
-        if data.get("buttons[0]"):
-            new_template.button1 = data.get("buttons[0]")
-        if data.get("buttons[1]"):
-            new_template.button2 = data.get("buttons[1]")
-        if data.get("buttons[2]"):
-            new_template.button3 = data.get("buttons[2]")
-        if data.get("buttons[3]"):
-            new_template.button4 = data.get("buttons[3]")
+        url = f"https://graph.facebook.com/v21.0/{phone_number_id}/message_templates"
 
-        new_template.save()
+        # Define the template payload
+        template_name = data.get("templateName")
+        template_name=template_name.replace(" ", "_")
+        payload = {
+            "name": template_name,
+            "language": "en_US",
+            "category": data.get("category"),
+            "components": [
+                {
+                    "type": "HEADER",
+                    "format": "TEXT",
+                    "text": data.get("headerContent")
+                },
+                {
+                    "type": "BODY",
+                    "text": data.get("content")
+                },
+                {
+                    "type": "FOOTER",
+                    "text": data.get("footerContent")
+                }
+            ]
+        }
 
-        return Response({"status": "Success"})
+        # Set the headers
+        headers = {
+            "Authorization": f"Bearer {access_token}",
+            "Content-Type": "application/json"
+        }
+
+        # Send the POST request
+        response = requests.post(url, headers=headers, data=json.dumps(payload))
+
+        # Handle the response
+        if response.status_code == 200:
+            print("Message sent successfully:", response.json())
+            new_template = Template()
+            new_template.name = template_name
+            new_template.language = data.get("language")
+            new_template.category = data.get("category")
+            new_template.template_type = data.get("templateType")
+            new_template.body = data.get("content")
+            new_template.headerType = data.get("headerType")
+            if (data.get("headerContent") and data.get("headerContent") != "undefined"):
+                new_template.header = data.get("headerContent")
+            new_template.footer = data.get("footerContent")
+            new_template.header_media = request.FILES.get("templateFile")
+            if data.get("buttons[0]"):
+                new_template.button1 = data.get("buttons[0]")
+            if data.get("buttons[1]"):
+                new_template.button2 = data.get("buttons[1]")
+            if data.get("buttons[2]"):
+                new_template.button3 = data.get("buttons[2]")
+            if data.get("buttons[3]"):
+                new_template.button4 = data.get("buttons[3]")
+            new_template.save()
+            return Response({"status": "Success"})
+        else:
+            print("Failed to send message:", response.status_code, response.json())
+
+
+        return Response({"status": "Error"}, HTTP_400_BAD_REQUEST)

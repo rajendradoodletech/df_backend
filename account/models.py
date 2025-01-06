@@ -82,7 +82,7 @@ class OTP(models.Model):
         return self.otp
     
 class ContactGroup(models.Model):
-    group_name = models.CharField(max_length=200, unique=True, help_text="Name of the group")
+    group_name = models.CharField(max_length=200, help_text="Name of the group")
 
     def __str__(self):
         return self.group_name
@@ -99,16 +99,16 @@ class Contact(models.Model):
 
 class Template(models.Model):
     TEMPLATE_CATEGORIES = [
-        ('marketing', 'Marketing'),
-        ('sales', 'Sales'),
-        ('support', 'Support'),
+        ('UTILITY', 'UTILITY'),
+        ('MARKETING', 'MARKETING'),
+        ('AUTHENTICATION', 'AUTHENTICATION'),
     ]
     TEMPLATE_TYPE = [
         ('STANDARD', 'Standard'),
         ('MEDIA', 'Media'),
     ]
 
-    name = models.CharField(max_length=255, unique=True, help_text="WhatsApp template name")
+    name = models.CharField(max_length=255, help_text="WhatsApp template name")
     language = models.CharField(max_length=10, default="en_US", help_text="Language code, e.g., en_US")
     category = models.CharField(max_length=15, choices=TEMPLATE_CATEGORIES, 
     help_text="Template category")
